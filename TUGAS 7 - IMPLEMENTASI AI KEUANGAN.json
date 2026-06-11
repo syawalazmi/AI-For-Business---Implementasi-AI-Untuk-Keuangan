@@ -1,0 +1,276 @@
+{
+  "name": "TUGAS 7 - IMPLEMENTASI AI KEUANGAN",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        304
+      ],
+      "id": "782ec251-94ae-4a90-bdfe-7c31b5033497",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yB4jwonTtBXHqcWsXwYJrwWB4x856POddLa3dNd7Jm0",
+          "mode": "list",
+          "cachedResultName": "1 Data Dummy Catatan Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yB4jwonTtBXHqcWsXwYJrwWB4x856POddLa3dNd7Jm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yB4jwonTtBXHqcWsXwYJrwWB4x856POddLa3dNd7Jm0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -592,
+        304
+      ],
+      "id": "33a265e5-6a8b-41eb-b542-3de7c3e9a641",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CCK67BAc07CYfmqO",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// TEST manual karena data sheet tahun 2026\nconst today = new Date(\"2026-05-11\");\ntoday.setHours(23, 59, 59, 999);\n\nconst sevenDaysAgo = new Date(today);\nsevenDaysAgo.setDate(today.getDate() - 7);\nsevenDaysAgo.setHours(0, 0, 0, 0);\n\nlet weeklyExpenses = [];\nlet formattedString = \"Data pengeluaran saya minggu ini:\\n\";\nlet hasExpenses = false;\n\nfor (const item of items) {\n  const rawTanggal = item.json.Tanggal;\n\n  const [day, month, year] = rawTanggal.split(\"/\");\n  const expenseDate = new Date(`${year}-${month}-${day}`);\n\n  if (expenseDate >= sevenDaysAgo && expenseDate <= today) {\n    weeklyExpenses.push(item.json);\n\n    formattedString += `- ${item.json.Deskripsi}: Rp${item.json[\"Jumlah (IDR)\"]}\\n`;\n\n    hasExpenses = true;\n  }\n}\n\nreturn [{\n  json: {\n    promptData: formattedString,\n    hasExpenses\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        304
+      ],
+      "id": "8d57954b-d31a-4da1-b307-2fa9854bc634",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d58e0eb7-a4fe-47f0-a6a8-b67e40885dd0",
+              "leftValue": "={{ $node[\"Code in JavaScript\"].json.hasExpenses }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        304
+      ],
+      "id": "c37b5215-8bbc-45b8-96f0-c30b9782b110",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "1467598233",
+        "text": "Tidak ditemukan log pengeluaran 7 hari terakhir",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        400
+      ],
+      "id": "71932969-8efe-4466-a025-0e4bee8e8374",
+      "name": "Send a text message",
+      "webhookId": "36971a95-fd6c-48aa-99a6-363cd11a56f9",
+      "credentials": {
+        "telegramApi": {
+          "id": "d7xBhA7km4zwpr4y",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $node[\"Code in JavaScript\"].json.promptData }} (Notes: sesuaikan dengan nama nodes kalian).\n\n---\nInstruksi: \"Tulis ringkasan kebiasaan belanja saya minggu ini dan beri 1 saran penghematan.\"\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac33ba2c-e191-4dc2-8315-08e540a3f9e0",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "99c60da3-90e2-4983-b997-0fc2248501c2",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XV6LZnrD3rHUwn5T",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1467598233",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "3c6dd697-eb59-47ee-ae47-d2d5315a1381",
+      "name": "Send a text message1",
+      "webhookId": "36971a95-fd6c-48aa-99a6-363cd11a56f9",
+      "credentials": {
+        "telegramApi": {
+          "id": "d7xBhA7km4zwpr4y",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e6588d3a-d1dc-441c-8797-cc87ab92469d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8dfe3a5e99e695dccc398a064d8c0f0077bcda1e85dda73761fff18561132e5"
+  },
+  "nodeGroups": [],
+  "id": "4aRbznW9imOvVqB4",
+  "tags": []
+}
