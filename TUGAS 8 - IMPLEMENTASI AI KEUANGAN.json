@@ -1,0 +1,425 @@
+{
+  "name": "TUGAS 8 - IMPLEMENTASI AI KEUANGAN",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a00f468f-38f0-4350-abce-8f39cb5b5e63",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        352
+      ],
+      "id": "ab49e364-33f2-403a-aa3a-1beb06558b1a",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Berdasarkan data sentimen crypto hari ini dari media berita:\n\nData BTC:\n- Total Berita: {{ $node[\"Edit Fields\"].json.BTC.total }}\n- Signal: {{ $node[\"Edit Fields\"].json.BTC.signal }}\n- Skor Rata-rata: {{ $node[\"Edit Fields\"].json.BTC.avg_compound }}\n\nData ETH:\n- Total Berita: {{ $node[\"Edit Fields\"].json.ETH.total }}\n- Signal: {{ $node[\"Edit Fields\"].json.ETH.signal }}\n- Skor Rata-rata: {{ $node[\"Edit Fields\"].json.ETH.avg_compound }}\n\nBerikan ringkasan singkat dalam 1 kalimat mengenai kondisi pasar crypto saat ini (apakah sedang optimis atau waspada).",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        0
+      ],
+      "id": "71f11f58-d3c0-4896-aa43-b0b7d17ce26c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "17g4-y7MLqdYEMyrftR-PB0UXr29xiPREn_0tI7qeHbk",
+          "mode": "list",
+          "cachedResultName": "Menyesuaikan Kodingan Colab dan Google Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17g4-y7MLqdYEMyrftR-PB0UXr29xiPREn_0tI7qeHbk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Menyesuaikan Kodingan Colab dan Google Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17g4-y7MLqdYEMyrftR-PB0UXr29xiPREn_0tI7qeHbk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('Schedule Trigger').item.json.timestamp }}",
+            "BTC_Signal": "={{ $node[\"Edit Fields\"].json.BTC.signal }}",
+            "BTC_Score": "={{ $node[\"Edit Fields\"].json.BTC.avg_compound }}",
+            "ETH_Signal": "={{ $node[\"Edit Fields\"].json.ETH.signal }}",
+            "ETH_Score": "={{ $node[\"Edit Fields\"].json.ETH.avg_compound }}",
+            "AI_Summary": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BTC_Signal",
+              "displayName": "BTC_Signal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "BTC_Score",
+              "displayName": "BTC_Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ETH_Signal",
+              "displayName": "ETH_Signal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ETH_Score",
+              "displayName": "ETH_Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "AI_Summary",
+              "displayName": "AI_Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        0
+      ],
+      "id": "8fada5bc-6d90-4ff2-8915-aaf0ec48fb64",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CCK67BAc07CYfmqO",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1G3Y6rJMXym_LVg1ynRRtT6sYL3rTcb6FVMPNKiYh69A",
+          "mode": "list",
+          "cachedResultName": "Menyesuaikan Kodingan Colab dan Google Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1G3Y6rJMXym_LVg1ynRRtT6sYL3rTcb6FVMPNKiYh69A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1343329755,
+          "mode": "list",
+          "cachedResultName": "Menyesuaikan Kodingan Colab dan Google Sheets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1G3Y6rJMXym_LVg1ynRRtT6sYL3rTcb6FVMPNKiYh69A/edit#gid=1343329755"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        352
+      ],
+      "id": "1ca1a253-2654-4edb-8ee7-c2a12934e434",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CCK67BAc07CYfmqO",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mengambil data dari node sebelumnya secara otomatis\nconst items = $input.all();\n\nlet btc_neutral = 0;\nlet eth_neutral = 0;\nlet total_data = items.length;\n\n// Loop untuk menghitung sinyal berdasarkan kolom yang ada di sheet kamu\nfor (const item of items) {\n  if (item.json.BTC_Signal === 'NEUTRAL') btc_neutral++;\n  if (item.json.ETH_Signal === 'NEUTRAL') eth_neutral++;\n}\n\nreturn {\n  total_laporan: total_data,\n  btc_stats: {\n    neutral: btc_neutral,\n    avg_score: items[0].json.BTC_Score // Mengambil skor terbaru\n  },\n  eth_stats: {\n    neutral: eth_neutral,\n    avg_score: items[0].json.ETH_Score\n  },\n  ringkasan_ai: items[0].json.AI_Summary\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        352
+      ],
+      "id": "2bd2a869-041d-46f0-ba5c-d02010ffe38d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Anda adalah seorang analis pasar kripto profesional. Buatlah laporan singkat untuk dikirim ke Telegram berdasarkan ringkasan data berikut:\n\n- Total Data Dianalisis: {{ $json.total_laporan }}\n- Status BTC Terbaru: {{ $json.btc_stats.neutral > 0 ? 'Stabil/Netral' : 'Bergejolak' }} (Skor: {{ $json.btc_stats.avg_score }})\n- Status ETH Terbaru: {{ $json.eth_stats.neutral > 0 ? 'Stabil/Netral' : 'Bergejolak' }} (Skor: {{ $json.eth_stats.avg_score }})\n\nAnalisis Tambahan:\n{{ $json.ringkasan_ai }}\n\nBuatlah laporan dalam 2-3 kalimat yang santai namun informatif untuk komunitas trader di Telegram.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        576,
+        352
+      ],
+      "id": "0b4557e2-3eaf-484c-8e2c-049b31188f25",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "chatId": "1467598233",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        352
+      ],
+      "id": "9e21715c-ccd5-4249-a47c-79aa222d84e8",
+      "name": "Send a text message",
+      "webhookId": "8aec95af-aa30-4307-afd5-01f1cce9d07d",
+      "credentials": {
+        "telegramApi": {
+          "id": "d7xBhA7km4zwpr4y",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"BTC\": {\n    \"total\": 92,\n    \"bullish\": 30,\n    \"bearish\": 35,\n    \"neutral\": 27,\n    \"avg_compound\": -0.04,\n    \"signal\": \"NEUTRAL\",\n    \"scraped_at\": \"2026-04-22T10:34:34.904592\"\n  },\n  \"ETH\": {\n    \"total\": 74,\n    \"bullish\": 31,\n    \"bearish\": 31,\n    \"neutral\": 12,\n    \"avg_compound\": -0.0064,\n    \"signal\": \"NEUTRAL\",\n    \"scraped_at\": \"2026-04-22T10:34:34.905090\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "267a3178-aa54-4590-bcf2-0c3a84ffff8d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        352,
+        208
+      ],
+      "id": "df8e0774-89dc-41e2-b839-6deaa0217a8b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "K0MyGKSWYzpuRFAv",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        560,
+        560
+      ],
+      "id": "c35beac6-4136-40f1-a3d3-328ca20af0f0",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "K0MyGKSWYzpuRFAv",
+          "name": "Groq account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a87da1c2-fffd-425f-a4a4-bd3e10573b6c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8dfe3a5e99e695dccc398a064d8c0f0077bcda1e85dda73761fff18561132e5"
+  },
+  "nodeGroups": [],
+  "id": "ob7rjpKDqcKnNCum",
+  "tags": []
+}
